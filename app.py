@@ -25,6 +25,14 @@ def get_tasks():
     return render_template("tasks.html", tasks=tasks)
 
 
+# search function ------------------------------------------------------------
+@app.route("/search", methods=["GET", "POST"])
+def search():
+    query = request.form.get("query")
+    tasks = list(mongo.db.tasks.find({"$text": {"$search": query}}))
+    return render_template("tasks.html", tasks=tasks)
+
+
 # register function -----------------------------------------------------------
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -189,6 +197,7 @@ def edit_category(category_id):
     return render_template("edit_category.html", category=category)
 
 
+# delete categories function -------------------------------------------------
 @app.route("/delete_category/<category_id>")
 def delete_category(category_id):
     mongo.db.categories.remove({"_id": ObjectId(category_id)})
