@@ -25,6 +25,7 @@ def get_tasks():
     return render_template("tasks.html", tasks=tasks)
 
 
+# register function -----------------------------------------------------------
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
@@ -49,6 +50,7 @@ def register():
     return render_template("register.html")
 
 
+# login function -----------------------------------------------------------
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -78,7 +80,7 @@ def login():
     return render_template("login.html")
 
 
-# profile function
+# profile function -----------------------------------------------------------
 @app.route("/profile/<username>", methods=["GET", "POST"])
 def profile(username):
     # sessions username
@@ -91,7 +93,7 @@ def profile(username):
     return redirect(url_for("login"))
 
 
-# log out function
+# log out function -----------------------------------------------------------
 @app.route("/logout")
 def logout():
     # remove user from session cookies
@@ -100,9 +102,7 @@ def logout():
     return redirect(url_for("login"))
 
 
-# add task function
-
-
+# add task function -----------------------------------------------------------
 @app.route("/add_task", methods=["GET", "POST"])
 def add_task():
     if request.method == "POST":
@@ -123,8 +123,23 @@ def add_task():
     return render_template("add_task.html", categories=categories)
 
 
+# edit task function ---------------------------------------------------------
 @app.route("/edit_task/<task_id>", methods=["GET", "POST"])
 def edit_task(task_id):
+
+    if request.method == "POST":
+        is_urgent = "on" if request.form.get("is_urgent") else "off"
+        submit = {
+            "category_name": request.form.get("category_name"),
+            "task_name": request.form.get("task_name"),
+            "task_description": request.form.get("task_description"),
+            "is_urgent": is_urgent,
+            "due_date": request.form.get("due_date"),
+            "created_by": session["user"]
+        }
+        mongo.db.tasks.update({"_id": ObjectId(task_id)}, submit)
+        flash("Task Successfully Updated")
+
     task = mongo.db.tasks.find_one({"_id": ObjectId(task_id)})
     categories = mongo.db.categories.find().sort("category_name", 1)
     return render_template("edit_task.html", task=task, categories=categories)
